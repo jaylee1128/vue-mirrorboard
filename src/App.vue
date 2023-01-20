@@ -1,47 +1,46 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
+import DateClock from "./components/DateClock.vue";
+import MonthCalendar from "./components/MonthCalendar.vue";
+import WeatherPanel from "./components/WeatherPanel.vue";
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-    </div>
-  </header>
+  <header></header>
 
   <main>
-    <TheWelcome />
+    <div class="leftpan">
+      <DateClock class="clock" text="" />
+      <div class="spliter"></div>
+      <WeatherPanel id="weather"></WeatherPanel>
+    </div>
+    <MonthCalendar class="calendar" />
   </main>
 </template>
 
 <style scoped>
-header {
-  line-height: 1.5;
+main {
+  height: 100%;
+  display: flex;
+  flex-direction: row;
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+.leftpan {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.clock {
+  margin: 50px;
+}
+.spliter {
+  flex: 1;
 }
 
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
+#weather {
+  flex: 1;
+}
 
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
+.calendar {
+  margin-left: 5px;
 }
 </style>
