@@ -10,14 +10,14 @@ const updateWeatherData = (event: any) => (weatherData.value = event[0]);
 <template>
   <div>
     <CurrentWeather
-      apiKey="e7ed170c9b0f91b11e37cab93f5918b0"
+      apiKey="api-key"
       lat="36.4298820"
       long="127.387621"
       hourly
       @weatherData="updateWeatherData"
     />
     <HourlyWeather
-      apiKey="e7ed170c9b0f91b11e37cab93f5918b0"
+      apiKey="api-key"
       lat="36.4298820"
       long="127.387621"
       hourly
