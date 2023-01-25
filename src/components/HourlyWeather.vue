@@ -35,7 +35,11 @@ const apiLink = ref("");
 const weather = ref<any>("");
 const hourly = ref<any>();
 const daily = ref<any>();
-const weatherIdxMap = ref<any>();
+//const weatherIdxMap = ref<any>();
+//const weatherIdxMapKeys = ref<any>();
+
+const hwDay = ref<any>();
+
 watchEffect(async () => {
   apiLink.value = `https://api.openweathermap.org/data/2.5/onecall?lat=${
     props.lat
@@ -51,6 +55,7 @@ watchEffect(async () => {
     daily.value = weather.value.daily;
     //emits("weatherData", [weather.value]);
 
+    /*
     var idxmap: Record<string, any[]> = {};
 
     var date = "";
@@ -63,10 +68,17 @@ watchEffect(async () => {
       idxmap[date].push(hw);
     });
 
-    if (Object.keys(idxmap).length > 0) weatherIdxMap.value = idxmap;
+    if (Object.keys(idxmap).length > 0) {
+      weatherIdxMap.value = idxmap;
+      weatherIdxMapKeys.value = Object.keys(idxmap);
+      console.log(weatherIdxMapKeys.value);
+      var tmp = weatherIdxMapKeys.value[0];
+      console.log(weatherIdxMap.value[tmp]);
+      console.log(weatherIdxMap.value[weatherIdxMapKeys.value[1]]);
+      console.log(weatherIdxMap.value[weatherIdxMapKeys.value[2]]);
+    }
 
-    console.log("1111");
-
+    console.log("1111");*/
   } catch (error) {
     console.log(error);
   }
@@ -75,13 +87,92 @@ watchEffect(async () => {
 
 <template>
   <div class="component">
-    <div class="horizontal">
-      <div v-if="hourly && props.hourly">
-        <div v-if="weatherIdxMap">
-          <div v-for="day in weatherIdxMap" :key="day">
-            {{ day }}
+    <div v-if="hourly && props.hourly" class="wrap">
+      <div v-for="condition in hourly" :key="condition" style="margin: 5px">
+        <p
+          v-if="hwDay != utcToDateShort(condition.dt, weather.timezone_offset)"
+          style="margin-top: 0.25rem"
+          align="center"
+        >
+          {{ (hwDay = utcToDateShort(condition.dt, weather.timezone_offset)) }}
+        </p>
+        <p v-else style="margin-top: 0.25rem">&nbsp;</p>
+        <p style="margin: 0.25rem" align="center">
+          {{ utcToTimeShort(condition.dt, weather.timezone_offset) }}시
+        </p>
+        <p style="margin-top: 0.75rem" align="center">{{ condition.temp }}°C</p>
+        <Transition appear>
+          <div class="center">
+            <div class="absolute">
+              <div class="relative left-[-50%]" v-show="!isLoaded">
+                <div class="lds-dual-ring"></div>
+              </div>
+            </div>
+          </div>
+        </Transition>
+        <Transition>
+          <div class="center" v-show="isLoaded">
+            <img
+              width="40"
+              height="40"
+              draggable="false"
+              @load="isLoaded = true"
+              :alt="condition.weather[0]"
+              :src="`https://openweathermap.org/img/wn/${condition.weather[0].icon}@2x.png`"
+            />
+          </div>
+        </Transition>
+      </div>
+    </div>
+    <!--
+    <div v-if="weatherIdxMap && weatherIdxMapKeys">
+      <div>
+        <div v-for="key in weatherIdxMapKeys" :key="key">
+          {{ key }}
+          <div class="horizontal">
+            <div v-for="hw in weatherIdxMap[key]" :key="hw">
+              <p style="margin-top: 0.25rem" align="center">
+                {{ utcToTimeShort(hw.dt, weather.timezone_offset) }}
+              </p>
+              <p style="margin-top: 0.75rem" align="center">{{ hw.temp }}°C</p>
+              <Transition appear>
+                <div class="center">
+                  <div class="absolute">
+                    <div class="relative left-[-50%]" v-show="!isLoaded">
+                      <div class="lds-dual-ring"></div>
+                    </div>
+                  </div>
+                </div>
+              </Transition>
+              <Transition>
+                <div class="center" v-show="isLoaded">
+                  <img
+                    width="30"
+                    height="30"
+                    draggable="false"
+                    @load="isLoaded = true"
+                    :alt="hw.weather[0]"
+                    :src="`https://openweathermap.org/img/wn/${hw.weather[0].icon}.png`"
+                  />
+                </div>
+              </Transition>
+            </div>
           </div>
         </div>
+      </div>
+    </div>
+    <div class="horizontal">
+
+
+
+      
+
+
+
+
+
+
+      <div v-if="hourly && props.hourly">
         <div class="card" v-for="condition in hourly" :key="condition">
           <p style="margin-top: 0.25rem" align="center">
             {{ utcToDateShort(condition.dt, weather.timezone_offset) }}
@@ -109,7 +200,7 @@ watchEffect(async () => {
                 draggable="false"
                 @load="isLoaded = true"
                 :alt="condition.weather[0]"
-                :src="`https://openweathermap.org/img/wn/${condition.weather[0].icon}@2x.png`"
+                :src="`https://openweathermap.org/img/wn/${condition.weather[0].icon}.png`"
               />
             </div>
           </Transition>
@@ -153,11 +244,15 @@ watchEffect(async () => {
           </div>
         </Transition>
       </div>
-    </div>
+    </div>-->
   </div>
 </template>
 
 <style>
+.wrap {
+  display: flex;
+  flex-wrap: wrap;
+}
 .center {
   display: flex;
   justify-content: center;
@@ -180,15 +275,15 @@ watchEffect(async () => {
 
 .lds-dual-ring {
   display: inline-block;
-  width: 80px;
-  height: 80px;
+  width: 40px;
+  height: 40px;
 }
 
 .lds-dual-ring:after {
   content: " ";
   display: block;
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   margin: 8px;
   border-radius: 50%;
   border: 6px solid #fff;
