@@ -27,36 +27,8 @@ export const utcToDate = (time: number, offset: number) => {
 };
 
 export const utcToDateShort = (time: number, offset: number) => {
-  /*const now = new Date();
-  const nowDate = new Date(
-    now.getFullYear(),
-    now.getMonth() + 1,
-    now.getDate()
-  );
-  const date = convertTimeZone(time, offset);
-  const getDate = new Date(
-    date.getFullYear(),
-    date.getMonth() + 1,
-    date.getDate()
-  );
-  const btMs = getDate.getTime() - nowDate.getTime();
-  if (btMs <= 0) {
-    return "";
-  } else {
-    const btDay = btMs / (1000 * 60 * 60 * 24);
-    switch (btDay) {
-      case 1:
-        return "";
-      case 2:
-        return "";
-      case 3:
-        return "";
-    }
-  }*/
   const date = convertTimeZone(time, offset);
   const day = date.toLocaleString("default", { weekday: "short" });
-  //const month = date.toLocaleString("default", { month: "long" });
-  //const dayOfMonth = date.getDate();
   return `${day}`;
 
 };
@@ -81,11 +53,6 @@ export const utcToTime = (time: number, offset: number) => {
 export const utcToTimeShort = (time: number, offset: number) => {
   const date = convertTimeZone(time, offset);
   const hours = date.getHours();
-  const minutes = date.getMinutes();
-  const ampm = hours >= 12 ? "pm" : "am";
-  const hour = hours == 12 && ampm == "pm" ? hours : hours % 12;
-  const formattedHour = hour < 10 ? `0${hour}` : hour;
-  const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
   return `${hours}`;
 };
 
@@ -97,42 +64,4 @@ export const utcToTimeShort = (time: number, offset: number) => {
  */
 export const excludeString = (excludes: any[]) => {
   return excludes.join(",");
-};
-
-/**
- * It takes an API key, latitude, longitude, units, and an array of strings that represent the data you
- * want to exclude from the response.
- *
- * It returns a promise that resolves to an object containing the weather data.
- *
- * The function uses the fetch API to make a request to the OpenWeatherMap API.
- *
- * @param {string} apiKey - string - Your OpenWeatherMap API key
- * @param {string} lat - string,
- * @param {string} lon - longitude
- * @param [units=metric] - metric, imperial, or standard
- * @param excludes - An array of strings that are the names of the data points you want to exclude from
- * the response.
- * @returns An object with the weather data.
- */
-export const getWeather = async (
-  apiKey: string,
-  lat: string,
-  lon: string,
-  units = "metric",
-  excludes = ["minutely", "alerts"]
-) => {
-  let data;
-  try {
-    const response = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=${units}&exclude=${excludeString(
-        excludes
-      )}`
-    );
-    data = await response.json();
-  } catch (error) {
-    console.log(error);
-    data = {};
-  }
-  return data;
 };

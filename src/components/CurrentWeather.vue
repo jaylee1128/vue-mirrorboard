@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import { ref, watchEffect } from "vue";
-import { utcToDate, utcToTime } from "./WeatherUtils";
+import { ref } from "vue";
+import { utcToTime } from "./WeatherUtils";
 const props = defineProps({
   apiKey: String,
   lat: String,
@@ -10,9 +10,7 @@ const props = defineProps({
     default: "metric", // metric, imperial
   },
 });
-const emits = defineEmits(["currentWeather"]);
-const update = ref(true);
-// Function that converts angle to N/S/E/W/NE/NW/SE/SW
+
 const convertDirection = (angle: number) => {
   if (angle >= 22.5 && angle < 67.5) {
     return "NE";
@@ -34,34 +32,30 @@ const convertDirection = (angle: number) => {
 };
 const weather = ref<any>();
 const currentWeather = ref<any>();
-watchEffect(async () => {
-  try {
-    const weatherData = await fetch(
-      `https://api.openweathermap.org/data/3.0/onecall?lat=${props.lat}&lon=${props.long}&appid=${props.apiKey}&units=${props.units}&exclude=minutely,alerts,hourly,daily`
-    );
-    weather.value = await weatherData.json();
-    currentWeather.value = weather.value.current;
-    utcToDate(currentWeather.value.dt, weather.value.timezone_offset);
-    emits("currentWeather", [weather.value]);
-  } catch (error) {
-    console.log(error);
-  }
-});
-// set update interval to update every minute minus the current seconds elapsed
-setInterval(() => {
-  update.value = !update.value;
-}, (120 - new Date().getSeconds()) * 1000);
+
+async function getCurrentWeather() {
+  const weatherData = await fetch(
+    `https://api.openweathermap.org/data/3.0/onecall?lat=${props.lat}&lon=${props.long}&appid=${props.apiKey}&units=${props.units}&exclude=minutely,alerts,hourly,daily`
+  );
+  weather.value = await weatherData.json();
+  currentWeather.value = weather.value.current;
+}
+
+setInterval(
+  getCurrentWeather,
+  60 * 1000 * import.meta.env.VITE_WEATHER_REFRESH_MINUTE
+);
+getCurrentWeather();
 </script>
 
 <template>
   <div
-    class="component card"
+    class="weathercon card"
     style="padding-left: 15px; padding-bottom: 20px"
     v-if="currentWeather"
   >
     <div style="display: flex">
       <h1 style="flex: 1">Now</h1>
-      <!--<div style="flex:1"></div>-->
       <div class="desc">
         {{ currentWeather.weather[0].description }}
       </div>
@@ -112,7 +106,7 @@ setInterval(() => {
 <style scoped>
 .grid-container {
   display: grid;
-  max-width: 600px;
+  /* max-width: 600px; */
   grid-template-columns: auto auto auto;
   grid-gap: 10px;
   padding: 10px;
@@ -123,5 +117,23 @@ setInterval(() => {
   flex: 2;
   align-self: center;
   flex-direction: row-reverse;
+}
+
+.card {
+  min-width: 150px;
+  margin: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 15px;
+  box-shadow: 5px 4px 9px 3px rgba(0, 0, 0, 0.3);
+  transition: 0.3s;
+  background-color: #fff1;
+}
+</style>
+
+<style>
+.weathercon {
+  user-select: none;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: bold;
 }
 </style>

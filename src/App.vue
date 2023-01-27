@@ -26,7 +26,7 @@ main {
 
 .leftpan {
   height: 100%;
-  width: 50%;
+  width: 41%;
   display: flex;
   flex-direction: column;
 }
@@ -43,5 +43,6 @@ main {
 
 .calendar {
   margin-left: 5px;
+  width: 100%;
 }
 </style>

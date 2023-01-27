@@ -6,7 +6,6 @@ defineProps<{
 }>();
 var date = ref("");
 var time = ref("");
-var week = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
 setInterval(updateTime, 1000);
 updateTime();
@@ -26,7 +25,7 @@ function updateTime() {
     ". " +
     zeroPadding(cd.getDate()) +
     ". " +
-    week[cd.getDay()];
+    cd.toLocaleString("default", { weekday: "short" });
 }
 
 function zeroPadding(num: number, digit = 2) {
@@ -35,7 +34,7 @@ function zeroPadding(num: number, digit = 2) {
 </script>
 
 <template>
-  <div id="clock">
+  <div class="clock">
     <p class="date">{{ date }}</p>
     <p class="time">{{ time }}</p>
     <p class="text" v-if="text?.length">{{ text }}</p>
@@ -47,23 +46,23 @@ p {
   margin: 0;
   padding: 0;
 }
-#clock {
+.clock {
   display: flex;
   justify-items: center;
   flex-direction: column;
   align-items: center;
-  background: radial-gradient(ellipse at center, #0a2e38 0%, #00000000 70%);
+  /* background: radial-gradient(ellipse at center, #0a2e38 0%, #00000000 70%); */
   color: #daf6ff;
-  text-shadow: 0 0 20px rgba(10, 175, 230, 1), 0 0 20px rgba(10, 175, 230, 0);
+  text-shadow: 0 0 20px rgb(218, 222, 223), 0 0 20px rgba(10, 175, 230, 0);
 }
 .time {
   letter-spacing: 0.05em;
-  font-size: 120px;
+  font-size: 170px;
   line-height: 1;
 }
 .date {
   letter-spacing: 0.1em;
-  font-size: 40px;
+  font-size: 60px;
 }
 .text {
   letter-spacing: 0.1em;

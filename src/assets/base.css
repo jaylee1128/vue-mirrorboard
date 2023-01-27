@@ -62,7 +62,7 @@
 body {
   min-height: 100vh;
   color: var(--color-text);
-  background: var(--color-background);
+  /* background: var(--color-background); */
   /* background-image: url(https://post-phinf.pstatic.net/MjAyMjEyMTJfMTQx/MDAxNjcwODA3MTU3MDI1.HtFw3RenjsJvUQ7_tzW8twmSIFA7Ovsod-Sj8HwDxnsg.Q5WO0Iy2_7rmnQ2zuirSfFvfR6QBZCNTAXCxZ0nE4WAg.PNG/%EC%99%84%EB%B2%BD%ED%95%9C%ED%83%80%EC%9D%B8.png?type=w1200); */
   /* transition: color 0.5s, background-color 0.5s; */
   font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,

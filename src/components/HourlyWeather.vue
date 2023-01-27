@@ -1,12 +1,6 @@
 <script lang="ts" setup>
-import { ref, watchEffect } from "vue";
-import {
-  utcToDate,
-  utcToTime,
-  excludeString,
-  utcToDateShort,
-  utcToTimeShort,
-} from "./WeatherUtils";
+import { ref } from "vue";
+import { excludeString, utcToDateShort, utcToTimeShort } from "./WeatherUtils";
 
 const props = withDefaults(
   defineProps<{
@@ -25,78 +19,61 @@ const props = withDefaults(
     excludes: () => ["minutely", "alerts", "current"],
   }
 );
-//const emits = defineEmits(["weatherData"]);
+
 const isLoaded = ref(false);
-
-//const dayOfMonth = ref("");
-
-// Weather Data
-const apiLink = ref("");
 const weather = ref<any>("");
-const hourly = ref<any>();
-const daily = ref<any>();
-//const weatherIdxMap = ref<any>();
-//const weatherIdxMapKeys = ref<any>();
+const hourlyData = ref<any>();
 
-const hwDay = ref<any>();
+var hwDay = "";
+setInterval(
+  getWeather,
+  60 * 1000 * import.meta.env.VITE_WEATHER_REFRESH_MINUTE
+);
+getWeather();
 
-watchEffect(async () => {
-  apiLink.value = `https://api.openweathermap.org/data/2.5/onecall?lat=${
+async function getWeather() {
+  const apiLink = `https://api.openweathermap.org/data/2.5/onecall?lat=${
     props.lat
   }&lon=${props.long}&appid=${props.apiKey}&units=${
     props.units
   }&exclude=${excludeString(props.excludes)}`;
 
   try {
-    const weatherData = await fetch(apiLink.value);
+    const weatherData = await fetch(apiLink);
     weather.value = await weatherData.json();
-    console.log(weather.value);
-    hourly.value = weather.value.hourly;
-    daily.value = weather.value.daily;
-    //emits("weatherData", [weather.value]);
-
-    /*
-    var idxmap: Record<string, any[]> = {};
-
-    var date = "";
-    hourly.value.forEach((hw: any) => {
-      var hwdate = utcToDateShort(hw.dt, weather.value.timezone_offset);
-      if (hwdate != date) {
-        date = hwdate;
-        idxmap[date] = [];
-      }
-      idxmap[date].push(hw);
-    });
-
-    if (Object.keys(idxmap).length > 0) {
-      weatherIdxMap.value = idxmap;
-      weatherIdxMapKeys.value = Object.keys(idxmap);
-      console.log(weatherIdxMapKeys.value);
-      var tmp = weatherIdxMapKeys.value[0];
-      console.log(weatherIdxMap.value[tmp]);
-      console.log(weatherIdxMap.value[weatherIdxMapKeys.value[1]]);
-      console.log(weatherIdxMap.value[weatherIdxMapKeys.value[2]]);
-    }
-
-    console.log("1111");*/
+    hourlyData.value = weather.value.hourly;
+    //console.log(hourlyData.value);
   } catch (error) {
     console.log(error);
   }
-});
+}
+
+function getHwDay(dt: number, get: boolean = false): string {
+  if (get) return hwDay;
+
+  var day = utcToDateShort(dt, weather.value.timezone_offset);
+
+  if (day != hwDay) {
+    hwDay = day;
+    return hwDay;
+  } else {
+    return "";
+  }
+}
 </script>
 
 <template>
-  <div class="component">
-    <div v-if="hourly && props.hourly" class="wrap">
-      <div v-for="condition in hourly" :key="condition" style="margin: 5px">
+  <div class="weathercon">
+    <div v-if="hourlyData && props.hourly" class="wrap">
+      <div v-for="condition in hourlyData" :key="condition" style="margin: 5px">
         <p
-          v-if="hwDay != utcToDateShort(condition.dt, weather.timezone_offset)"
-          style="margin-top: 0.25rem"
+          v-if="getHwDay(condition.dt).length > 0"
+          style="margin-top: 0.25rem, height: 20px"
           align="center"
         >
-          {{ (hwDay = utcToDateShort(condition.dt, weather.timezone_offset)) }}
+          {{ getHwDay(condition.dt, true) }}
         </p>
-        <p v-else style="margin-top: 0.25rem">&nbsp;</p>
+        <p v-else style="margin-top: 0.25rem, height: 20px">&nbsp;</p>
         <p style="margin: 0.25rem" align="center">
           {{ utcToTimeShort(condition.dt, weather.timezone_offset) }}시
         </p>
@@ -124,166 +101,31 @@ watchEffect(async () => {
         </Transition>
       </div>
     </div>
-    <!--
-    <div v-if="weatherIdxMap && weatherIdxMapKeys">
-      <div>
-        <div v-for="key in weatherIdxMapKeys" :key="key">
-          {{ key }}
-          <div class="horizontal">
-            <div v-for="hw in weatherIdxMap[key]" :key="hw">
-              <p style="margin-top: 0.25rem" align="center">
-                {{ utcToTimeShort(hw.dt, weather.timezone_offset) }}
-              </p>
-              <p style="margin-top: 0.75rem" align="center">{{ hw.temp }}°C</p>
-              <Transition appear>
-                <div class="center">
-                  <div class="absolute">
-                    <div class="relative left-[-50%]" v-show="!isLoaded">
-                      <div class="lds-dual-ring"></div>
-                    </div>
-                  </div>
-                </div>
-              </Transition>
-              <Transition>
-                <div class="center" v-show="isLoaded">
-                  <img
-                    width="30"
-                    height="30"
-                    draggable="false"
-                    @load="isLoaded = true"
-                    :alt="hw.weather[0]"
-                    :src="`https://openweathermap.org/img/wn/${hw.weather[0].icon}.png`"
-                  />
-                </div>
-              </Transition>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="horizontal">
-
-
-
-      
-
-
-
-
-
-
-      <div v-if="hourly && props.hourly">
-        <div class="card" v-for="condition in hourly" :key="condition">
-          <p style="margin-top: 0.25rem" align="center">
-            {{ utcToDateShort(condition.dt, weather.timezone_offset) }}
-          </p>
-          <p style="margin-top: 0.25rem" align="center">
-            {{ utcToTimeShort(condition.dt, weather.timezone_offset) }}
-          </p>
-          <p style="margin-top: 0.75rem" align="center">
-            {{ condition.temp }}°C
-          </p>
-          <Transition appear>
-            <div class="center">
-              <div class="absolute">
-                <div class="relative left-[-50%]" v-show="!isLoaded">
-                  <div class="lds-dual-ring"></div>
-                </div>
-              </div>
-            </div>
-          </Transition>
-          <Transition>
-            <div class="center" v-show="isLoaded">
-              <img
-                width="20"
-                height="20"
-                draggable="false"
-                @load="isLoaded = true"
-                :alt="condition.weather[0]"
-                :src="`https://openweathermap.org/img/wn/${condition.weather[0].icon}.png`"
-              />
-            </div>
-          </Transition>
-        </div>
-      </div>
-      <div
-        v-else-if="daily && props.daily"
-        class="card"
-        v-for="dailyCond in daily"
-        :key="dailyCond"
-      >
-        <p style="margin-top: 0.25rem" align="center">
-          {{ utcToDate(dailyCond.dt, weather.timezone_offset) }}
-        </p>
-        <p style="margin-top: 0.75rem" align="center">
-          <svg width="1em" height="1em" viewBox="0 0 24 24">
-            <path
-              fill="currentColor"
-              d="M19 18H6a4 4 0 0 1-4-4a4 4 0 0 1 4-4h.71C7.37 7.69 9.5 6 12 6a5.5 5.5 0 0 1 5.5 5.5v.5H19a3 3 0 0 1 3 3a3 3 0 0 1-3 3m.35-7.97A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.03A6.004 6.004 0 0 0 0 14a6 6 0 0 0 6 6h13a5 5 0 0 0 5-5c0-2.64-2.05-4.78-4.65-4.97Z"
-            ></path>
-          </svg>
-          {{ dailyCond.clouds }}%
-        </p>
-        <Transition appear>
-          <div class="center">
-            <div class="absolute">
-              <div class="relative left-[-50%]" v-show="!isLoaded">
-                <div class="lds-dual-ring"></div>
-              </div>
-            </div>
-          </div>
-        </Transition>
-        <Transition>
-          <div class="center" v-show="isLoaded">
-            <img
-              draggable="false"
-              @load="isLoaded = true"
-              :alt="dailyCond.weather[0]"
-              :src="`https://openweathermap.org/img/wn/${dailyCond.weather[0].icon}@2x.png`"
-            />
-          </div>
-        </Transition>
-      </div>
-    </div>-->
   </div>
 </template>
 
-<style>
+<style scoped>
 .wrap {
   display: flex;
   flex-wrap: wrap;
 }
+
 .center {
   display: flex;
   justify-content: center;
 }
 
-.component {
-  user-select: none;
-  font-family: Arial, Helvetica, sans-serif;
-  font-weight: bold;
-}
-
-.card {
-  min-width: 150px;
-  margin: 0.5rem;
-  padding: 0.5rem;
-  border-radius: 15px;
-  box-shadow: 5px 4px 9px 3px rgba(0, 0, 0, 0.2);
-  transition: 0.3s;
-}
-
 .lds-dual-ring {
   display: inline-block;
-  width: 40px;
-  height: 40px;
+  width: 30px;
+  height: 30px;
 }
 
 .lds-dual-ring:after {
   content: " ";
   display: block;
-  width: 40px;
-  height: 40px;
+  width: 30px;
+  height: 30px;
   margin: 8px;
   border-radius: 50%;
   border: 6px solid #fff;
@@ -298,26 +140,5 @@ watchEffect(async () => {
   100% {
     transform: rotate(360deg);
   }
-}
-</style>
-
-<style scoped>
-.horizontal {
-  display: flex;
-  overflow-x: scroll;
-}
-
-.horizontal::-webkit-scrollbar {
-  display: none;
-}
-
-.v-enter-active,
-.v-leave-active {
-  transition: opacity 0.5s ease;
-}
-
-.v-enter-from,
-.v-leave-to {
-  opacity: 0;
 }
 </style>
