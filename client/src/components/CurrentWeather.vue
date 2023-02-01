@@ -67,6 +67,14 @@ getCurrentWeather();
     </div>
     <div class="grid-container">
       <div>
+        Temperature
+        {{ currentWeather.temp }}°C
+      </div>
+      <div>
+        Feels Like
+        {{ currentWeather.feels_like }}°C
+      </div>
+      <div>
         Cloud Cover
         {{ currentWeather.clouds }}%
       </div>
@@ -77,14 +85,6 @@ getCurrentWeather();
       <div>
         Pressure
         {{ currentWeather.pressure }}hPa
-      </div>
-      <div>
-        Temperature
-        {{ currentWeather.temp }}°C
-      </div>
-      <div>
-        Feels Like
-        {{ currentWeather.feels_like }}°C
       </div>
       <div>
         Wind
