@@ -1,5 +1,7 @@
 # vue-mirrorboard
 
+![screenshot](https://user-images.githubusercontent.com/54261815/216528260-35101f67-61e5-44ea-b80d-9d0422ebd25d.png)
+
 This template should help get you started developing with Vue 3 in Vite.
 
 ## Recommended IDE Setup
