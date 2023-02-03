@@ -11,7 +11,7 @@ defineProps<{
 }>();
 
 let calendar: any = undefined;
-let useGoogleOAuth2 = true;
+let useGoogleOAuth2 = JSON.parse(import.meta.env.VITE_GOOGLE_USE_OATH2);
 
 async function checkGoogleAuth(): Promise<boolean> {
   // eslint-disable-next-line no-constant-condition
@@ -149,7 +149,6 @@ if (useGoogleOAuth2) {
 
 <style scoped>
 #calendar {
-  /* background: #ff0000; */
   height: 100%;
   display: flex;
   align-items: center;

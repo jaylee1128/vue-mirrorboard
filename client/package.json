@@ -15,6 +15,7 @@
     "@fullcalendar/daygrid": "^6.0.3",
     "@fullcalendar/google-calendar": "^6.0.3",
     "@fullcalendar/vue3": "^6.0.3",
+    "swiper": "^9.0.2",
     "vue": "^3.2.45"
   },
   "devDependencies": {

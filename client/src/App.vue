@@ -2,18 +2,21 @@
 import DateClock from "./components/DateClock.vue";
 import MonthCalendar from "./components/MonthCalendar.vue";
 import WeatherPanel from "./components/WeatherPanel.vue";
+import RssNews from "./components/RssNews.vue";
 </script>
 
 <template>
   <header></header>
-
   <main>
     <div class="leftpan">
       <DateClock class="clock" text="" />
       <div class="spliter"></div>
       <WeatherPanel id="weather"></WeatherPanel>
     </div>
-    <MonthCalendar class="calendar" />
+    <div class="rightpan">
+      <MonthCalendar class="calendar" />
+      <RssNews class="news"></RssNews>
+    </div>
   </main>
 </template>
 
@@ -42,7 +45,20 @@ main {
 }
 
 .calendar {
-  margin-left: 5px;
+  width: 95%;
+  flex: 9;
+}
+
+.rightpan {
+  align-items: center;
+  width: 59%;
+  display: flex;
+  flex-direction: column;
+}
+
+.news {
   width: 100%;
+  height: 100px;
+  flex: 1;
 }
 </style>

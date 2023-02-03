@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const opn = require('open');
 const {google} = require('googleapis');
+const xmlParser = require('xml2json');
 
 const app = express();
 const port = 3000;
@@ -102,6 +103,24 @@ app.get("/goauth2callback", (req, res) => {
     const rkeyPath = path.join(__dirname, REFRESH_KEY_FILE);
     const keyjson = JSON.stringify(keydata);
     fs.writeFileSync(rkeyPath, keyjson);  
+  });
+});
+
+app.get("/news", (req, res) => {
+  fetch("https://news.sbs.co.kr/news/sitemapRSS.do", {
+    mode: "no-cors",
+  })
+  .then((response) => response.text())
+  .then((str) => xmlParser.toJson(str))
+  .then((data) => {
+    var json = JSON.parse(data);
+    
+    let rslts = [];
+    json.rss.channel.item.forEach(item => {
+      rslts.push({title:item.title});
+    });
+
+    res.json(rslts);
   });
 });
 
