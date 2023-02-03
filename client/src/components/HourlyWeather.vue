@@ -65,19 +65,28 @@ function getHwDay(dt: number, get: boolean = false): string {
 <template>
   <div class="weathercon">
     <div v-if="hourlyData && props.hourly" class="wrap">
-      <div v-for="condition in hourlyData" :key="condition" style="margin: 5px">
+      <div
+        v-for="condition in hourlyData"
+        :key="condition"
+        style="
+          margin-top: 0px;
+          margin-left: 5px;
+          margin-right: 5px;
+          margin-bottom: 0px;
+        "
+      >
         <p
           v-if="getHwDay(condition.dt).length > 0"
-          style="margin-top: 0.25rem, height: 20px"
+          style="margin-top: 1px; height: 22px"
           align="center"
         >
           {{ getHwDay(condition.dt, true) }}
         </p>
-        <p v-else style="margin-top: 0.25rem, height: 20px">&nbsp;</p>
+        <p v-else style="margin-top: 1px; height: 22px">&nbsp;</p>
         <p style="margin: 0.25rem" align="center">
           {{ utcToTimeShort(condition.dt, weather.timezone_offset) }}시
         </p>
-        <p style="margin-top: 0.75rem" align="center">{{ condition.temp }}°C</p>
+        <p style="margin-top: 2px" align="center">{{ condition.temp }}°C</p>
         <Transition appear>
           <div class="center">
             <div class="absolute">
@@ -105,6 +114,12 @@ function getHwDay(dt: number, get: boolean = false): string {
 </template>
 
 <style scoped>
+.weathercon {
+  user-select: none;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  color: rgb(230, 230, 230);
+}
 .wrap {
   display: flex;
   flex-wrap: wrap;

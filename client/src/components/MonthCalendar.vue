@@ -1,61 +1,149 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import FullCalendar from "@fullcalendar/vue3";
+import { onMounted } from "vue";
+import { Calendar } from "@fullcalendar/core";
+//import FullCalendar from "@fullcalendar/vue3";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import googleCalendarPlugin from "@fullcalendar/google-calendar";
 import { eventSources } from "./CalendarEventSources";
-import type { an } from "@fullcalendar/core/internal-common";
 
 defineProps<{
   text?: string;
 }>();
 
-const calendarOptions = ref({
-  plugins: [dayGridPlugin, googleCalendarPlugin],
-  initialView: "dayGridMonth",
-  googleCalendarApiKey: import.meta.env.VITE_GOOGLE_CALENDAR_API_KEY,
-  weekends: true,
-  headerToolbar: { start: "", center: "title", end: "" },
-  eventSources: eventSources,
-});
+let calendar: any = undefined;
+let useGoogleOAuth2 = true;
 
-function asdf(a:any) {
-  console.log(a)
-  //console.log(b)
-  //console.log(c)
+async function checkGoogleAuth(): Promise<boolean> {
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    let res = await fetch("/checkgoogleauth");
+    let json = await res.json();
+
+    if (json.error) {
+      alert(json.error);
+      return false;
+    }
+
+    if (json.needauth) {
+      alert("Click ok after Google sign in.");
+      continue;
+    }
+
+    if (json.ok) {
+      return true;
+    }
+  }
 }
 
-// let recaptchaScript = document.createElement('script');
-// recaptchaScript.setAttribute('src', 'https://accounts.google.com/gsi/client');
-// document.head.appendChild(recaptchaScript);
+async function getGoogleOAuth2Events() {
+  try {
+    let evs: any[] = [];
 
-fetch("/googlerefreshtoken").then((value: Response) => {
-  value.json().then((json: any) => {
-    console.log(json);
-  });
+    for (let i = 0; i < eventSources.length; i++) {
+      const src = eventSources[i];
+
+      let path = "/googleevents?id=" + encodeURIComponent(src.googleCalendarId);
+      fetch(path).then((res: Response) => {
+        res.json().then((json) => {
+          if (json.needauth) {
+            alert("Click ok after Google sign in.");
+            getGoogleOAuth2Events();
+            return;
+          }
+
+          if (json.error) {
+            alert("getGoogleOAuth2Events error : " + json.error);
+            return;
+          }
+
+          json.items.forEach((item: any) => {
+            if (item.start.date) {
+              evs.push({
+                title: item.summary,
+                start: item.start.date,
+                end: item.end.date,
+                color: src.color,
+                allDay: true,
+              });
+            } else {
+              evs.push({
+                title: item.summary,
+                start: item.start.dateTime,
+                end: item.end.dateTime,
+                color: src.color,
+              });
+            }
+          });
+
+          if (i == eventSources.length - 1) {
+            createCalendar(); // for today background bug
+            //calendar.getEventSourceById("default")?.remove();
+            calendar.addEventSource({ id: "default", events: evs });
+
+            //calendar.prev();
+          }
+        });
+      });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+onMounted(() => {
+  if (useGoogleOAuth2) updateEvents();
+  else createCalendar();
 });
+
+function updateEvents() {
+  checkGoogleAuth().then((rslt: boolean) => {
+    if (rslt) {
+      getGoogleOAuth2Events();
+    }
+  });
+}
+
+function createCalendar() {
+  if (calendar) calendar.destroy();
+
+  let el: HTMLElement = document.getElementById("fc")!;
+
+  if (useGoogleOAuth2) {
+    calendar = new Calendar(el, {
+      plugins: [dayGridPlugin],
+      initialView: "dayGridMonth",
+      weekends: true,
+      headerToolbar: { start: "", center: "title", end: "" },
+      eventSources: [{ id: "default", events: [] }],
+      now: new Date(),
+    });
+  } else {
+    calendar = new Calendar(el, {
+      plugins: [dayGridPlugin, googleCalendarPlugin],
+      initialView: "dayGridMonth",
+      googleCalendarApiKey: import.meta.env.VITE_GOOGLE_CALENDAR_API_KEY,
+      weekends: true,
+      headerToolbar: { start: "", center: "title", end: "" },
+      eventSources: eventSources,
+      now: new Date(),
+    });
+  }
+
+  calendar.render();
+}
+
+if (useGoogleOAuth2) {
+  setInterval(
+    updateEvents,
+    1000 * 60 * import.meta.env.VITE_CALENDAR_REFRESH_MINUTE
+  );
+}
 </script>
 
 <template>
   <div id="calendar">
-    <!--<FullCalendar :options="calendarOptions" style="flex: 1" />-->
-    <div id="g_id_onload"
-      data-client_id="4522972674-4684ps8qbolfbe6ip6l787omsbovcbhg.apps.googleusercontent.com"
-      data-context="use"
-      data-ux_mode="popup"
-      @data-callback="asdf"
-      data-close_on_tap_outside="false"
-      data-itp_support="true">
-    </div>
-
-    <div class="g_id_signin"
-      data-type="standard"
-      data-shape="pill"
-      data-theme="filled_black"
-      data-text="continue_with"
-      data-size="large"
-      data-logo_alignment="left">
-    </div>
+    <!--FullCalendar id="fc" :options="calendarOptions" style="flex: 1" />-->
+    <div id="fc" style="flex: 1" />
   </div>
 </template>
 

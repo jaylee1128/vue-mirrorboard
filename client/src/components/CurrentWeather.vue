@@ -50,13 +50,13 @@ getCurrentWeather();
 
 <template>
   <div
-    class="weathercon card"
+    class="card"
     style="padding-left: 15px; padding-bottom: 20px"
     v-if="currentWeather"
   >
     <div style="display: flex">
-      <h1 style="flex: 1">Now</h1>
-      <div class="desc">
+      <h1 style="flex: 1; font-size: 50px">Now</h1>
+      <div class="desc" style="font-size: 20px">
         {{ currentWeather.weather[0].description }}
       </div>
       <img
@@ -110,6 +110,7 @@ getCurrentWeather();
   grid-template-columns: auto auto auto;
   grid-gap: 10px;
   padding: 10px;
+  font-size: 20px;
 }
 
 .desc {
@@ -126,14 +127,10 @@ getCurrentWeather();
   border-radius: 15px;
   box-shadow: 5px 4px 9px 3px rgba(0, 0, 0, 0.3);
   transition: 0.3s;
-  background-color: #fff1;
-}
-</style>
-
-<style>
-.weathercon {
+  background-color: #fff2;
   user-select: none;
   font-family: Arial, Helvetica, sans-serif;
   font-weight: bold;
+  color: rgb(230, 230, 230);
 }
 </style>

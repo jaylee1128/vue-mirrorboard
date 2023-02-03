@@ -6,7 +6,7 @@ export const eventSources = [
   },
   {
     googleCalendarId: "your_calendar_id",
-    color: "yellow",
+    color: "blue",
     progressiveEventRendering: true,
   },
 ];
