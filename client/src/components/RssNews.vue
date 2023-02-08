@@ -2,8 +2,8 @@
 import { ref } from "vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Virtual, Autoplay } from "swiper";
-import type { AutoplayOptions, PaginationOptions } from "swiper/types";
-import "swiper/css/bundle";
+import type { AutoplayOptions } from "swiper/types";
+import "swiper/css";
 import "swiper/css/autoplay";
 import "swiper/css/virtual";
 
