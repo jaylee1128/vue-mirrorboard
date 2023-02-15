@@ -16,7 +16,8 @@ let useGoogleOAuth2 = JSON.parse(import.meta.env.VITE_GOOGLE_USE_OATH2);
 async function checkGoogleAuth(): Promise<boolean> {
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    let res = await fetch("/checkgoogleauth");
+    let path = "/checkgoogleauth";
+    let res = await fetch(path);
     let json = await res.json();
 
     if (json.error) {
@@ -46,8 +47,9 @@ async function getGoogleOAuth2Events() {
       fetch(path).then((res: Response) => {
         res.json().then((json) => {
           if (json.needauth) {
-            alert("Click ok after Google sign in.");
-            getGoogleOAuth2Events();
+            if (i == eventSources.length - 1) {
+              updateEvents();
+            }
             return;
           }
 
@@ -79,8 +81,6 @@ async function getGoogleOAuth2Events() {
             createCalendar(); // for today background bug
             //calendar.getEventSourceById("default")?.remove();
             calendar.addEventSource({ id: "default", events: evs });
-
-            //calendar.prev();
           }
         });
       });

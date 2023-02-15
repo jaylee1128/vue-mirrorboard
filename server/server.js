@@ -36,7 +36,7 @@ app.get("/checkgoogleauth", (req, res) => {
     authenticate(client);
   } else {
     msg.ok = true;
-    res.json(msg);
+    res.json(msg); 
   }
 });
 
@@ -78,6 +78,16 @@ app.get("/googleevents", (req, res) => {
     calendar.events.list({calendarId:encodeURI(calId), timeMin:mindate, timeMax:maxdate}).then(calres => {
       res.json(calres.data);
       console.log("get:", calres.data.summary);
+    }).catch(reason => {
+      console.log(reason)
+      err.needauth = true;
+
+      _refreshKey = undefined;
+      const rkeyPath = path.join(__dirname, REFRESH_KEY_FILE);
+      fs.unlink(rkeyPath, (err) => err ? console.log(err) : console.log(`Delete ${REFRESH_KEY_FILE}.`));
+
+      res.json(err);
+      return;
     })
   }
 });
@@ -94,15 +104,17 @@ app.get("/goauth2callback", (req, res) => {
   oauth2Client.getToken(code).then((tokenrslt) => {
     oauth2Client.credentials = tokenrslt.tokens;
     
-    res.end("Authentication successful! Close this page.");
-
     let keydata = {
       refresh_token : tokenrslt.tokens.refresh_token,
     };
 
     const rkeyPath = path.join(__dirname, REFRESH_KEY_FILE);
     const keyjson = JSON.stringify(keydata);
-    fs.writeFileSync(rkeyPath, keyjson);  
+    fs.writeFileSync(rkeyPath, keyjson);
+
+    getRefreshKey();
+
+    res.end("Authentication successful! Close this page.");
   });
 });
 
@@ -144,9 +156,10 @@ function getOauth2Client() {
   if (_oauth2Client) return _oauth2Client;
 
   const keyPath = path.join(__dirname, OAUTH2_KEY_FILE);
-  let keys = undefined;
+  
   if (fs.existsSync(keyPath)) {
-    keys = require(keyPath);
+    let rawdata = fs.readFileSync(keyPath);
+    let keys = JSON.parse(rawdata);
   
     _oauth2Client = new google.auth.OAuth2(
       keys.client_id,
@@ -163,11 +176,16 @@ function getOauth2Client() {
 }
 
 function getRefreshKey() {
-  if (_refreshKey && _refreshKey.length > 0) return _refreshKey;
-
+  if (_refreshKey && _refreshKey.length > 0) {
+    return _refreshKey;
+  } 
+  
   const rkeyPath = path.join(__dirname, REFRESH_KEY_FILE);
   if (fs.existsSync(rkeyPath)) {
-    let refreshKey = require(rkeyPath);
+    
+    let rawdata = fs.readFileSync(rkeyPath);
+    let refreshKey = JSON.parse(rawdata);
+    
     _refreshKey = refreshKey.refresh_token;
   }
   
