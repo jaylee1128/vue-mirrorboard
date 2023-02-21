@@ -80,7 +80,9 @@ async function getGoogleOAuth2Events() {
           if (i == eventSources.length - 1) {
             createCalendar(); // for today background bug
             //calendar.getEventSourceById("default")?.remove();
-            calendar.addEventSource({ id: "default", events: evs });
+            setTimeout(() => {
+              calendar.addEventSource({ id: "default", events: evs });
+            }, 500);
           }
         });
       });
