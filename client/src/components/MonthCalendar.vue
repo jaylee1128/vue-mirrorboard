@@ -26,8 +26,13 @@ async function checkGoogleAuth(): Promise<boolean> {
     }
 
     if (json.needauth) {
-      alert("Click ok after Google sign in.");
-      continue;
+      //alert("Click ok after Google sign in.");
+      if (!confirm("Click ok after Google sign in.")) {
+        return false;
+      } else {
+        continue;
+      }
+      //continue;
     }
 
     if (json.ok) {
@@ -39,6 +44,7 @@ async function checkGoogleAuth(): Promise<boolean> {
 async function getGoogleOAuth2Events() {
   try {
     let evs: any[] = [];
+    let curdate = new Date();
 
     for (let i = 0; i < eventSources.length; i++) {
       const src = eventSources[i];
@@ -60,6 +66,15 @@ async function getGoogleOAuth2Events() {
 
           json.items.forEach((item: any) => {
             if (item.start.date) {
+              if (item.recurrence) {
+                let sdate = new Date(item.start.date);
+                sdate.setFullYear(curdate.getFullYear());
+                item.start.date = sdate;
+                let edate = new Date(item.end.date);
+                edate.setFullYear(curdate.getFullYear());
+                item.end.date = edate;
+              }
+
               evs.push({
                 title: item.summary,
                 start: item.start.date,
