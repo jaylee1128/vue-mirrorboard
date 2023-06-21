@@ -41,6 +41,26 @@ async function checkGoogleAuth(): Promise<boolean> {
   }
 }
 
+function getDateFromTZ(tz: string): Date {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  //let [_, year, month, day, hour, min, sec] = tz.match(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/)
+  let match = tz.match(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/);
+
+  if (!match) {
+    return new Date();
+  }
+
+  let date = new Date(
+    Number(match[1]),
+    Number(match[2]) - 1,
+    Number(match[3]),
+    Number(match[4]),
+    Number(match[5]),
+    Number(match[6])
+  );
+  return date;
+}
+
 async function getGoogleOAuth2Events() {
   try {
     let evs: any[] = [];
@@ -89,6 +109,70 @@ async function getGoogleOAuth2Events() {
                 end: item.end.dateTime,
                 color: src.color,
               });
+
+              if (item.recurrence) {
+                let sdate = new Date(item.start.dateTime);
+
+                let untildate = new Date();
+                let freq = 0;
+                let exdates: Date[] = [];
+
+                item.recurrence.forEach((curr: string) => {
+                  if (curr.indexOf("RRULE:FREQ=") >= 0) {
+                    let idx = curr.indexOf("UNTIL=") + 6;
+                    let lastidx = curr.indexOf(";", idx);
+                    let until = curr.substring(idx, lastidx);
+
+                    untildate = getDateFromTZ(until);
+                    //untildate = new Date(until);
+
+                    if (curr.indexOf("WEEKLY") >= 0) {
+                      freq = 7;
+                    } else if (curr.indexOf("DAILY") >= 0) {
+                      freq = 1;
+                    } else if (curr.indexOf("MONTHLY") >= 0) {
+                      freq = 30;
+                    } else if (curr.indexOf("YEARLY") >= 0) {
+                      freq = 365;
+                    }
+                  } else if (curr.indexOf("EXDATE") >= 0) {
+                    let idx = curr.indexOf(":") + 1;
+                    let exdate = curr.substring(idx);
+                    let exdatearr = exdate.split(",");
+                    exdatearr.forEach((exdatestr: string) => {
+                      let exdate = getDateFromTZ(exdatestr);
+                      exdates.push(exdate);
+                    });
+                  }
+                });
+
+                while (
+                  sdate < untildate &&
+                  !(sdate.getMonth() > curdate.getMonth() + 1)
+                ) {
+                  sdate = new Date(
+                    sdate.getTime() + 1000 * 60 * 60 * 24 * freq
+                  );
+
+                  if (
+                    exdates.find(
+                      (exdate) => exdate.getTime() == sdate.getTime()
+                    )
+                  ) {
+                    continue;
+                  }
+
+                  let edate = new Date(item.end.dateTime);
+                  edate.setTime(edate.getTime() + 1000 * 60 * 60 * 24 * freq);
+                  let ev = {
+                    title: item.summary,
+                    start: sdate,
+                    end: edate,
+                    color: src.color,
+                  };
+                  evs.push(ev);
+                }
+              }
             }
           });
 
