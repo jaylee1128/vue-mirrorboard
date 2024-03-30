@@ -12,3 +12,5 @@ client/public/_back.png
 client/src/components/_CalendarEventSources.ts
 server/_googleOauth2Keys.json
 server/refreshKeys.json
+/node_modules
+.DS_Store
